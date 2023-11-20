@@ -1,3 +1,6 @@
+from veiculo import Veiculo
+from vaga import Vaga
+
 from datetime import datetime
 
 def calcular_tempo_estacionamento(entrada, saida):
@@ -9,19 +12,6 @@ def calcular_tempo_estacionamento(entrada, saida):
 
     return diferenca_tempo.total_seconds() / 60
 
-class Veiculo:
-    def __init__(self, placa, horario_entrada):
-        self.placa = placa
-        self.horario_entrada = horario_entrada
-
-
-class Vaga:
-    def __init__(self, numero, disponivel=True, veiculo=None):
-        self.numero = numero
-        self.disponivel = disponivel
-        self.veiculo = veiculo
-
-
 
 class Estacionamento:
     def __init__(self, capacidade, valor_hora):
@@ -31,15 +21,18 @@ class Estacionamento:
         self.veiculos = [Vaga(numero) for numero in range(1, capacidade + 1)]
         self.veiculos_estacionados = {}
         self.veiculos_estacionados_hoje = 0
+        self.lucro = 0
 
     def get_vagas_disponiveis(self):
         vagas_disponiveis = [
-            vaga.numero for vaga in self.veiculos if vaga.disponivel]
+            vaga.numero for vaga in self.veiculos if vaga.disponivel
+        ]
         return vagas_disponiveis
 
     def get_vagas_ocupadas(self):
         vagas_ocupadas = [
-            vaga.numero for vaga in self.veiculos if not vaga.disponivel]
+            (vaga.numero, vaga.veiculo.placa) for vaga in self.veiculos if not vaga.disponivel
+        ]
         return vagas_ocupadas
 
     def estacionar_veiculo(self, veiculo):
@@ -74,6 +67,9 @@ class Estacionamento:
             else:
                 valor_cobranca = (tempo_estacionamento_minutos // 60 + 1) * self.valor_hora
 
+            # Atualizar o lucro do estacionamento
+            self.lucro += valor_cobranca
+
             # Liberar a vaga
             vaga_ocupada.disponivel = True
             vaga_ocupada.veiculo = None
@@ -83,69 +79,7 @@ class Estacionamento:
 
         return f'Veículo {veiculo_placa} não encontrado no estacionamento'
 
-
-    def veiculos_estacionados_no_dia(self):
-        return self.veiculos_estacionados_hoje
-
-
-
-def exibir_menu():
-    print("\nMenu:")
-    print("1. Estacionar veículo")
-    print("2. Ver vagas disponíveis")
-    print("3. Liberar vaga")
-    print("4. Veículos estacionados no dia")
-    print("0. Sair")
-    return input("Escolha a opção: ")
-
-
-
-def main():
-    # Inicializando o programa
-    capacidade_estacionamento = int(
-        input("Digite a capacidade do estacionamento: "))
-    valor_hora = int(input("Digite o valor da hora: "))
-    estacionamento = Estacionamento(capacidade_estacionamento, valor_hora)
-
-    while True:
-        escolha = exibir_menu()
-
-        # 1. Estacionar veículo
-        if escolha == '1':
-            placa = input("Digite a placa do veículo: ")
-            horario_entrada = input("Digite o horário de entrada (HH:MM): ")
-            veiculo = Veiculo(placa, horario_entrada)
-            resultado = estacionamento.estacionar_veiculo(veiculo)
-            print(resultado)
-
-        # 2. Ver vagas disponíveis
-        elif escolha == '2':
-            vagas_disponiveis = estacionamento.get_vagas_disponiveis()
-            print("Vagas Disponíveis:", vagas_disponiveis)
-
-        # 3. Liberar vaga
-        elif escolha == '3':
-            placa = input("Digite a placa do veículo a ser liberado: ")
-            horario_saida = input("Digite o horário de saída (HH:MM): ")
-            resultado = estacionamento.liberar_vaga(placa, horario_saida)
-            print(resultado)
-
-        # 4. Veículos estacionados no dia
-        elif escolha == '4':
-            total_veiculos = estacionamento.veiculos_estacionados_no_dia()
-            print(f"Total de veículos estacionados hoje: {total_veiculos}")
-
-        # 0. Sair
-        elif escolha == '0':
-            print("Saindo do programa. Até mais!")
-            break
-
-        else:
-            print("Opção inválida. Tente novamente.")
-
-
-if __name__ == "__main__":
-    main()
-
-
-#teste
+    def resumo_dia(self):
+        lucro = self.lucro
+        veiculos_estacionados = self.veiculos_estacionados_hoje
+        return f'{veiculos_estacionados} veículos estacionados hoje.\nLucro: R${lucro:.2f}'
