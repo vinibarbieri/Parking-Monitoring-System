@@ -3,13 +3,22 @@ from vaga import Vaga
 
 from datetime import datetime
 
+
 def calcular_tempo_estacionamento(entrada, saida):
     formato = "%H:%M"
+
+    # Transforma em HH:MM
     hora_entrada = datetime.strptime(entrada, formato)
     hora_saida = datetime.strptime(saida, formato)
 
+    # Acrescenta um dia saída < entrada
+    if hora_saida < hora_entrada:
+        hora_saida = hora_saida.replace(day=hora_saida.day + 1)
+
+    # Calcula a diferença
     diferenca_tempo = hora_saida - hora_entrada
 
+    # Retorna em minutos
     return diferenca_tempo.total_seconds() / 60
 
 
@@ -21,6 +30,7 @@ class Estacionamento:
         self.veiculos = [Vaga(numero) for numero in range(1, capacidade + 1)]
         self.veiculos_estacionados = {}
         self.veiculos_estacionados_lista = []
+        self.veiculos_estacionados_lista_hoje = []
         self.veiculos_estacionados_hoje = 0
         self.veiculos_estacionados_total = 0
         self.veiculos_estacionados_max = 0
@@ -28,8 +38,11 @@ class Estacionamento:
     
 
     def get_veiculos_estacionados(self):
+        # Verificar se há veículos estacionados
         if not self.veiculos_estacionados_lista:
             return "Nenhum veículo estacionado hoje."
+
+        # Exibir veículos estacionados
         for veiculo_info in self.veiculos_estacionados_lista:
             print("=====================================")
             print(f"Tipo do veículo: {veiculo_info['tipo_veiculo']}")
@@ -39,13 +52,19 @@ class Estacionamento:
 
 
     def get_vagas_disponiveis(self):
+        # Separa as vagas disponíveis
         vagas_disponiveis = [
             vaga.numero for vaga in self.veiculos if vaga.disponivel
         ]
+
+        if not vagas_disponiveis:
+            return "Nenhuma vaga disponível."
+
         return vagas_disponiveis
 
 
     def get_vagas_ocupadas(self):
+        # Separa as vagas ocupadas
         vagas_ocupadas = [
             (vaga.numero, vaga.veiculo.placa) for vaga in self.veiculos if not vaga.disponivel
         ]
@@ -56,13 +75,21 @@ class Estacionamento:
         # Verificar se o veículo já está estacionado
         if veiculo.placa in self.veiculos_estacionados:
             return f'Veículo {veiculo.placa} já está estacionado'
+
         # Verificar se há vagas disponíveis
         for vaga in self.veiculos:
             if vaga.disponivel:
                 vaga.disponivel = False
                 vaga.veiculo = veiculo
+                # Adicionar veículo estacionado
                 self.veiculos_estacionados[veiculo.placa] = vaga
                 self.veiculos_estacionados_lista.append({
+                    'tipo_veiculo': veiculo.tipo_veiculo,
+                    'placa': veiculo.placa,
+                    'horario_entrada': veiculo.horario_entrada,
+                    'vaga': vaga.numero
+                })
+                self.veiculos_estacionados_lista_hoje.append({
                     'tipo_veiculo': veiculo.tipo_veiculo,
                     'placa': veiculo.placa,
                     'horario_entrada': veiculo.horario_entrada,
@@ -100,6 +127,12 @@ class Estacionamento:
             vaga_ocupada.veiculo = None
             del self.veiculos_estacionados[veiculo_placa]
 
+            # Limpar veiculos estacionados
+            for veiculo_info in self.veiculos_estacionados_lista:
+                if veiculo_info['placa'] == veiculo_placa:
+                    self.veiculos_estacionados_lista.remove(veiculo_info)
+                    break
+
             self.veiculos_estacionados_total -= 1
 
             return f'Vaga {vaga_ocupada.numero} liberada. Cobrança total: R${valor_cobranca:.2f}'
@@ -123,7 +156,7 @@ class Estacionamento:
             
         # Contar veículos por tipo
         tipos_veiculos = {}
-        for veiculo_info in self.veiculos_estacionados_lista:
+        for veiculo_info in self.veiculos_estacionados_lista_hoje:
             tipo_veiculo = veiculo_info['tipo_veiculo']
             tipos_veiculos[tipo_veiculo] = tipos_veiculos.get(tipo_veiculo, 0) + 1
         

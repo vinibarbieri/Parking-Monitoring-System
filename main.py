@@ -2,6 +2,16 @@ from estacionamento import Estacionamento
 from veiculo import Carro, Moto, Caminhao
 
 
+def obter_tipo_veiculo():
+    while True:
+        tipo_veiculo = input("Digite o tipo do veículo: \n1. Carro\n2. Moto\n3. Caminhão:\n").lower()
+        if tipo_veiculo in ['1', '2', '3', 'carro', 'c', 'moto', 'm', 'caminhao', 'caminhão']:
+            return tipo_veiculo
+        else:
+            print("Tipo de veículo inválido. Tente novamente.")
+
+
+
 def exibir_menu():
     print("\nMenu:")
     print("1. Estacionar veículo")
@@ -27,31 +37,31 @@ def main():
         if escolha == '1':
             print("===============================================================")
 
-            tipo_veiculo = input("Digite o tipo do veículo (carro, moto ou caminhão): ").lower()
+            tipo_veiculo = obter_tipo_veiculo()
 
-            if tipo_veiculo == 'carro' or tipo_veiculo == 'c':
-                placa = input("Digite a placa do veículo: ")
+            # Carro
+            if tipo_veiculo == 'carro' or tipo_veiculo == 'c' or tipo_veiculo == '1':
+                placa = input("Digite a placa do carro: ")
                 horario_entrada = input("Digite o horário de entrada (HH:MM): ")
                 veiculo = Carro(placa, horario_entrada)
                 resultado = estacionamento.estacionar_veiculo(veiculo)
                 print(resultado)
             
-            elif tipo_veiculo == 'moto' or tipo_veiculo == 'm':
-                placa = input("Digite a placa do veículo: ")
+            # Moto
+            elif tipo_veiculo == 'moto' or tipo_veiculo == 'm' or tipo_veiculo == '2':
+                placa = input("Digite a placa da moto: ")
                 horario_entrada = input("Digite o horário de entrada (HH:MM): ")
                 veiculo = Moto(placa, horario_entrada)
                 resultado = estacionamento.estacionar_veiculo(veiculo)
                 print(resultado)
 
-            elif tipo_veiculo == 'caminhao' or tipo_veiculo == 'caminhão':
-                placa = input("Digite a placa do veículo: ")
+            # Caminhão
+            elif tipo_veiculo == 'caminhao' or tipo_veiculo == 'caminhão' or tipo_veiculo == '3':
+                placa = input("Digite a placa do caminhão: ")
                 horario_entrada = input("Digite o horário de entrada (HH:MM): ")
                 veiculo = Caminhao(placa, horario_entrada)
                 resultado = estacionamento.estacionar_veiculo(veiculo)
                 print(resultado)
-            
-            else:
-                print("Tipo de veículo inválido. Tente novamente.")
             
             print("===============================================================")
 
@@ -65,8 +75,7 @@ def main():
 
         # 3. Ver carros estacionados
         elif escolha == '3':
-            print('')
-            print("Veículos estacionados:")
+            print("\nVeículos estacionados:")
             veiculos_estacionados = estacionamento.get_veiculos_estacionados()
             if not veiculos_estacionados == None:
                 print(veiculos_estacionados)
